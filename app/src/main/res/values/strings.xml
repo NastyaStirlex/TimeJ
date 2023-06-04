@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">TimeJ</string>
+    <string name="welcome">Welcome to TSU.InTime</string>
+    <string name="sign_in">Sign In to Continue</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="remember_me">Remember me</string>
+    <string name="no_account">No account?</string>
+    <string name="login">Login</string>
+    <string name="faculty_name">Faculty name</string>
+    <string name="group_number">Group number</string>
+    <string name="teacher_name">Teacher name</string>
+    <string name="building_number">Building number</string>
+    <string name="auditorium_number">Auditorium number</string>
+    <string name="choice">"Select a section \n to Continue "</string>
+    <string name="faculty">Faculty</string>
+    <string name="groups">Groups</string>
+    <string name="teacher">Teacher</string>
+    <string name="building">Building</string>
+    <string name="auditorium">Auditorium</string>
+    <string name="teachers">Teachers</string>
+    <string name="menu">Menu</string>
+    <string name="favorites">Favorites</string>
+    <string name="settings">Settings</string>
+    <string name="logout">Logout</string>
+    <string name="date">Date</string>
+    <string name="today">Today</string>
+    <string name="week">Week</string>
+
+    <string name="login_failed">Неверный логин или пароль</string>
+    <string name="unknown_error">Произошла неизвестная ошибка</string>
+    <string name="http_error">Произошла ошибка при обращении к серверу</string>
+    <string name="network_error">Не удается подключиться к серверу</string>
+
+
+</resources>
