@@ -1,13 +1,11 @@
-package com.example.timej.data.net.auth_interceptor
+package com.example.timej.data.net
 
 import android.content.Context
-import android.util.Log
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.example.timej.dataStore
+import com.example.timej.di.dataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -19,11 +17,10 @@ class TokenManager @Inject constructor(
         private val SHARED_PREFS = stringPreferencesKey("APP_SHARED_PREFS")
         private val ACCESS_TOKEN_KEY = stringPreferencesKey("access_token")
         private val REFRESH_TOKEN_KEY = stringPreferencesKey("access_token")
+        private val EMAIL_KEY = stringPreferencesKey("email")
     }
 
-    val getAccessToken: Flow<String?> = context.dataStore.data.map { preferences ->
-        preferences[ACCESS_TOKEN_KEY] ?: ""
-    }
+
 
     fun getRefreshToken(): Flow<String?> {
         return context.dataStore.data.map { preferences ->
@@ -31,14 +28,7 @@ class TokenManager @Inject constructor(
         }
     }
 
-    suspend fun saveAccessToken(accessToken: String) {
-        context.dataStore.edit { preferences ->
-            preferences[ACCESS_TOKEN_KEY] = accessToken
-        }
-        Log.d("Data store: ", context.dataStore.data.map { preferences ->
-            preferences[ACCESS_TOKEN_KEY]
-        }.first() ?: "its null")
-    }
+
 
     suspend fun saveRefreshToken(refreshToken: String) {
         context.dataStore.edit { preferences ->

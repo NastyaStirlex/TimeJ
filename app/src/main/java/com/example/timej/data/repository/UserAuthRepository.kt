@@ -1,20 +1,15 @@
 package com.example.timej.data.repository
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.MutableState
 import com.example.timej.R
-import com.example.timej.data.callbacks.GetUserDetailsCallback
 import com.example.timej.data.net.MainApiService
 import com.example.timej.data.dto.LoginBodyDto
-import com.example.timej.data_classes.Event
+import com.example.timej.data.net.Event
 import com.example.timej.data.dto.TokenDto
 import com.example.timej.data.dto.UserDto
 import dagger.hilt.android.qualifiers.ApplicationContext
-import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.HttpException
-import retrofit2.Response
 import java.net.SocketException
 import java.net.UnknownHostException
 import javax.inject.Inject
@@ -41,93 +36,9 @@ class UserAuthRepository @Inject constructor(
     val teacherName = jwtRepository.getTeacherName(context = context)
     val teacherId = jwtRepository.getTeacherId(context = context)
 
-    private var callGetUser: Call<UserDto>? = null
+    suspend fun getUserDetails(accessToken: String): UserDto {
+        return mainApiService.getUserDetails(accessToken = "Bearer $accessToken")
 
-    fun getUserDetails(accessToken: String, callback: GetUserDetailsCallback<UserDto>) {
-        callGetUser = mainApiService.getUserDetails(accessToken = "Bearer $accessToken")
-
-        callGetUser?.enqueue(
-            object : Callback<UserDto> {
-                override fun onResponse(call: Call<UserDto>, response: Response<UserDto>) {
-                    if (response.code() == 400) {
-                        response.errorBody()?.let { Log.d("Error code 400", it.string()) }
-                        return
-                    }
-
-                    response.body()?.let { it ->
-                        if (response.isSuccessful) {
-                            callback.onSuccess(
-                                userDetails = it
-                            )
-                            jwtRepository.saveUserRole(response.body()!!.roles[0], context)
-                            when (response.body()!!.roles[0]) {
-                                "STUDENT" -> {
-                                    Log.d("save role: ", "student")
-                                    jwtRepository.saveGroupId(response.body()!!.group.id, context)
-                                    Log.d("save group id: ", response.body()!!.group.id)
-                                    jwtRepository.saveGroupNumber(
-                                        response.body()!!.group.groupNumber.toString(),
-                                        context
-                                    )
-                                    Log.d(
-                                        "save group number: ",
-                                        response.body()!!.group.groupNumber.toString()
-                                    )
-                                    jwtRepository.saveStudentName(
-                                        name = response.body()!!.surname + " " + response.body()!!.name + " " + response.body()!!.middleName,
-                                        context = context
-                                    )
-
-                                    Log.d(
-                                        "save student name: ",
-                                        response.body()!!.surname + " " + response.body()!!.name + " " + response.body()!!.middleName
-                                    )
-                                }
-                                "TEACHER" -> {
-                                    Log.d("save role: ", "teacher")
-
-                                    val fullname =
-                                        "${response.body()!!.surname} ${response.body()!!.name} ${response.body()!!.middleName}"
-                                    jwtRepository.saveTeacherName(
-                                        name = fullname,
-                                        context = context
-                                    )
-                                    jwtRepository.saveTeacherId(
-                                        id = response.body()!!.id,
-                                        context = context
-                                    )
-
-                                    Log.d("save teacher name and id: ", fullname)
-                                }
-                                else -> {
-                                    Log.d(
-                                        "not student and teacher!!!",
-                                        response.body()!!.roles.joinToString(", ")
-                                    )
-                                }
-                            }
-                        } else {
-                            Log.d("Response Code", response.errorBody().toString())
-                            try {
-                                val errorBody = response.errorBody()
-                                callback.onError(errorBody.toString())
-                            } catch (e: Exception) {
-                                when (e) {
-                                    is HttpException -> Log.d("Exception", "HTTP exception")
-                                }
-                            }
-                            Log.d("Error", "${callback.onError(response.errorBody().toString())}")
-
-                            return
-                        }
-                    }
-                }
-
-                override fun onFailure(call: Call<UserDto>, t: Throwable) {
-                    callback.onError(t.message)
-                }
-            }
-        )
     }
 
     // LOGIN

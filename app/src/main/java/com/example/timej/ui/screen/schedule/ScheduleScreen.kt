@@ -1,11 +1,10 @@
-package com.example.timej.ui.screen.student
+package com.example.timej.ui.screen.schedule
 
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerDefaults
@@ -20,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.timej.*
 import com.example.timej.R
 import com.example.timej.data.dto.Auditory
 import com.example.timej.data.dto.Group
@@ -28,25 +28,35 @@ import com.example.timej.data.dto.LessonType
 import com.example.timej.data.dto.ScheduleDayDto
 import com.example.timej.data.dto.Subject
 import com.example.timej.data.dto.Teacher
-import com.example.timej.data.net.Status
 import com.example.timej.ui.screen.MainViewModel
 import com.example.timej.ui.screen.schedule.view.LessonsDay
 import com.example.timej.ui.screen.schedule.view.NoLessons
 import com.example.timej.ui.screen.schedule.view.NoLessonsOnWeek
-import com.example.timej.ui.view.LoadingScreen
 import com.example.timej.ui.theme.*
+import kotlinx.coroutines.launch
 import org.joda.time.LocalDate
+import java.util.*
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun StudentScreen(
+fun ScheduleScreen(
     mainViewModel: MainViewModel,
-    studentViewModel: StudentViewModel,
-    group: String
+    group: String?,
+    teacher: String?,
+    building: String?,
+    auditorium: String?
 ) {
-    //val schedule by studentViewModel.studentScheduleState.observeAsState()
+    // val schedule by mainViewModel.scheduleState.observeAsState()
     val sdf = LocalDate.now()
+
     val mondayTest = sdf.withDayOfWeek(1)
+    val tuesday = sdf.withDayOfWeek(2)
+    val wednesday = sdf.withDayOfWeek(3)
+    val thursday = sdf.withDayOfWeek(4)
+    val friday = sdf.withDayOfWeek(5)
+    val saturdayTest = sdf.withDayOfWeek(6)
+    val sunday = sdf.withDayOfWeek(7)
+
     val schedule = listOf(
         ScheduleDayDto(
             mondayTest.toString("yyyy-MM-dd"), listOf(
@@ -100,11 +110,12 @@ fun StudentScreen(
             )
         )
     )
+    val weekdays by mainViewModel._weekdaysList.observeAsState()
+    val monday by remember { mainViewModel.monday }
+    val saturday by remember { mainViewModel.saturday }
 
-    val weekdays by studentViewModel._weekdaysList.observeAsState()
-    val monday by remember { studentViewModel.monday }
-    val saturday by remember { studentViewModel.saturday }
-    val studentScreenState by remember { studentViewModel.studentScreenState }
+    val currentDateAndTime = sdf.toString("dd MMMM yyyy")
+
 
     val pagerState = rememberPagerState(
         initialPage = 0,
@@ -113,8 +124,6 @@ fun StudentScreen(
         6
     }
     val pageCount = 6
-
-    val currentDateAndTime = sdf.toString("dd MMMM yyyy")
 
     Column {
         Box(
@@ -126,7 +135,9 @@ fun StudentScreen(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = stringResource(id = R.string.group_pattern, group),
+                    text = if (group != null) (stringResource(id = R.string.group_pattern, group))
+                    else teacher
+                        ?: if (building != null && auditorium != null) auditorium else "",
                     style = Shedule,
                     color = Shark
                 )
@@ -153,7 +164,7 @@ fun StudentScreen(
                             .size(15.dp)
                             .clip(RoundedCornerShape(10.dp))
                             .clickable {
-                                (studentViewModel::getPreviousSchedule)(
+                                (mainViewModel::getPreviousSchedule)(
                                     monday
                                         .minusDays(7)
                                         .toString("yyyy-MM-dd"),
@@ -161,9 +172,15 @@ fun StudentScreen(
                                         .minusDays(7)
                                         .toString("yyyy-MM-dd"),
 
-                                    mainViewModel.groupsState.find { it.groupNumber.toString() == group }?.id,
-                                    null,
-                                    null,
+                                    if (group != null)
+                                        mainViewModel.groupsState.find { it.groupNumber.toString() == group }?.id
+                                    else null,
+                                    if (teacher != null)
+                                        mainViewModel.teachersState.find { it.surname + " " + it.name + " " + it.middleName == teacher }?.id
+                                    else null,
+                                    if (auditorium != null)
+                                        mainViewModel.auditoriumsState.find { it.title == auditorium }?.id
+                                    else null,
                                     null
                                 )
                             }
@@ -188,12 +205,17 @@ fun StudentScreen(
                                 disabledContainerColor = White
                             )
                         ) {
+                            val coroutineScope = rememberCoroutineScope()
                             Column(
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier =
                                 Modifier
-                                    .clickable(onClick = {})
+                                    .clickable(onClick = {
+                                        coroutineScope.launch {
+                                            pagerState.scrollToPage(iteration)
+                                        }
+                                    })
                                     .fillMaxSize(),
                             ) {
                                 weekdays?.get(iteration)?.let {
@@ -215,13 +237,13 @@ fun StudentScreen(
                     }
 
                     Icon(
-                        painter = painterResource(id = R.drawable.arrow_right),
+                        painter = painterResource(id = R.drawable.arrow_left),
                         contentDescription = null,
                         tint = Raven,
                         modifier = Modifier
                             .clip(RoundedCornerShape(10.dp))
                             .clickable {
-                                (studentViewModel::getNextSchedule)(
+                                (mainViewModel::getNextSchedule)(
                                     monday
                                         .plusDays(7)
                                         .toString("yyyy-MM-dd"),
@@ -229,9 +251,15 @@ fun StudentScreen(
                                         .plusDays(7)
                                         .toString("yyyy-MM-dd"),
 
-                                    mainViewModel.groupsState.find { it.groupNumber.toString() == group }?.id,
-                                    null,
-                                    null,
+                                    if (group != null)
+                                        mainViewModel.groupsState.find { it.groupNumber.toString() == group }?.id
+                                    else null,
+                                    if (teacher != null)
+                                        mainViewModel.teachersState.find { it.surname + " " + it.name + " " + it.middleName == teacher }?.id
+                                    else null,
+                                    if (auditorium != null)
+                                        mainViewModel.auditoriumsState.find { it.title == auditorium }?.id
+                                    else null,
                                     null
                                 )
                             }
@@ -241,38 +269,34 @@ fun StudentScreen(
             }
         }
 
-        if (studentScreenState.status == Status.LOADING) {
-            LoadingScreen()
-        } else if (studentScreenState.status == Status.SUCCESS) {
-            HorizontalPager(
-                modifier = Modifier,
-                state = pagerState,
-                pageSpacing = 0.dp,
-                userScrollEnabled = true,
-                reverseLayout = false,
-                contentPadding = PaddingValues(0.dp),
-                beyondBoundsPageCount = 0,
-                pageSize = PageSize.Fill,
-                key = null,
-                pageNestedScrollConnection = PagerDefaults.pageNestedScrollConnection(
-                    Orientation.Horizontal
-                ),
-                pageContent = { page ->
-                    if (schedule?.isEmpty() == true || schedule?.size == null) {
-                        NoLessonsOnWeek()
+        HorizontalPager(
+            modifier = Modifier,
+            state = pagerState,
+            pageSpacing = 0.dp,
+            userScrollEnabled = true,
+            reverseLayout = false,
+            contentPadding = PaddingValues(0.dp),
+            beyondBoundsPageCount = 0,
+            pageSize = PageSize.Fill,
+
+            key = null,
+            pageNestedScrollConnection = PagerDefaults.pageNestedScrollConnection(
+                Orientation.Horizontal
+            ),
+            pageContent = { page ->
+                if (schedule.isEmpty() == true || schedule == null) {
+                    NoLessonsOnWeek()
+                } else {
+                    val day =
+                        schedule.find { it.date == weekdays?.get(page)?.number?.toString("yyyy-MM-dd") }
+                    if (day != null) {
+                        schedule.find { it.date == day.date }
+                            ?.let { LessonsDay(lessons = it.lessons) }
                     } else {
-                        val day =
-                            schedule!!.find { it.date == weekdays?.get(page)?.number?.toString("yyyy-MM-dd") }
-                        if (day != null) {
-                            schedule!!.find { it.date == day.date }
-                                ?.let { LessonsDay(lessons = it.lessons) }
-                        } else {
-                            NoLessons()
-                        }
+                        NoLessons()
                     }
                 }
-            )
-        }
-
+            }
+        )
     }
 }

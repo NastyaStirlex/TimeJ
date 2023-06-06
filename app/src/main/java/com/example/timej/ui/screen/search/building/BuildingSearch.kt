@@ -7,24 +7,23 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.timej.R
-import com.example.timej.data_classes.Status
+import com.example.timej.data.dto.BuildingDto
+import com.example.timej.data.net.Status
 import com.example.timej.ui.screen.MainViewModel
 import com.example.timej.ui.screen.search.view.SearchView
 import com.example.timej.ui.theme.HawkesBlue
 import com.example.timej.ui.theme.Raven
 import com.example.timej.ui.theme.SearchTitle
 import com.example.timej.ui.theme.Shark
-import com.example.timej.view.LoadingScreen
+import com.example.timej.ui.view.LoadingScreen
 
 @Composable
 fun BuildingSearch(
@@ -33,7 +32,16 @@ fun BuildingSearch(
     mainViewModel: MainViewModel
 ) {
     val building = remember { mainViewModel.buildingSearchState }
-    val buildings = remember { mainViewModel.buildingsState }
+    //val buildings = remember { mainViewModel.buildingsState }
+    val buildings = listOf(
+        BuildingDto("", "", "1 building", ""),
+        BuildingDto("", "", "2 building", ""),
+        BuildingDto("", "", "3 building", ""),
+        BuildingDto("", "", "4 building", ""),
+        BuildingDto("", "", "5 building", ""),
+        BuildingDto("", "", "6 building", ""),
+
+    )
     val screenState = remember { mainViewModel.buildingScreenState }
 
     Column {

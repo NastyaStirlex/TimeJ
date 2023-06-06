@@ -1,4 +1,4 @@
-package com.example.timej.data_classes
+package com.example.timej.data.net
 
 import androidx.annotation.StringRes
 

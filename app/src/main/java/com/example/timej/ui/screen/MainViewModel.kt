@@ -1,6 +1,5 @@
 package com.example.timej.ui.screen
 
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -8,11 +7,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.timej.data.callbacks.*
 import com.example.timej.data.dto.*
 import com.example.timej.data.repository.*
-import com.example.timej.data_classes.Event
-import com.example.timej.ui.screen.shedule.Day
+import com.example.timej.data.data_classes.Day
+import com.example.timej.data.net.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import org.joda.time.LocalDate
@@ -25,15 +23,15 @@ class MainViewModel @Inject constructor(
     private val facultyRepository: FacultyRepository,
     private val groupRepository: GroupRepository,
     private val teacherRepository: TeacherRepository,
-    private val sheduleRepository: SheduleRepository
+    private val scheduleRepository: ScheduleRepository
 ) : ViewModel() {
 
-    val screenState = mutableStateOf<Event<String>>(Event.default())
-    val buildingScreenState = mutableStateOf<Event<String>>(Event.default())
-    val auditoriumScreenState = mutableStateOf<Event<String>>(Event.default())
-    val facultyScreenState = mutableStateOf<Event<String>>(Event.default())
-    val groupScreenState = mutableStateOf<Event<String>>(Event.default())
-    val teachersScreenState = mutableStateOf<Event<String>>(Event.default())
+    private val screenState = mutableStateOf<Event<String>>(Event.default())
+    val buildingScreenState = mutableStateOf<Event<List<BuildingDto>>>(Event.default())
+    val auditoriumScreenState = mutableStateOf<Event<List<AuditoriumDto>>>(Event.default())
+    val facultyScreenState = mutableStateOf<Event<List<FacultyDto>>>(Event.default())
+    val groupScreenState = mutableStateOf<Event<List<GroupDto>>>(Event.default())
+    val teachersScreenState = mutableStateOf<Event<List<TeacherDto>>>(Event.default())
 
     val _weekdaysList = MutableLiveData<List<Day>>()
 
@@ -45,8 +43,6 @@ class MainViewModel @Inject constructor(
     }
 
     val sdf = LocalDate.now()
-
-
 
     val monday = mutableStateOf<LocalDate>(sdf.withDayOfWeek(1))
     val tuesday = mutableStateOf<LocalDate>(sdf.withDayOfWeek(2))
@@ -78,7 +74,6 @@ class MainViewModel @Inject constructor(
         )
 
     }
-
 
 
     private val _auditoriumSearchState = mutableStateOf("")
@@ -148,11 +143,11 @@ class MainViewModel @Inject constructor(
     val teachersState: List<TeacherDto>
         get() = _teachersState
 
-    private val _sheduleState = MutableLiveData<List<SheduleDayDto>>()
-    val sheduleState: LiveData<List<SheduleDayDto>>
-        get() = _sheduleState
+    private val _scheduleState = MutableLiveData<List<ScheduleDayDto>>()
+    val scheduleState: LiveData<List<ScheduleDayDto>>
+        get() = _scheduleState
 
-    fun getShedule(
+    fun getSchedule(
         beginDate: String?,
         endDate: String?,
         groupNumber: String?,
@@ -160,29 +155,24 @@ class MainViewModel @Inject constructor(
         auditoryId: String?,
         isOnline: Boolean?
     ) = viewModelScope.launch {
-        sheduleRepository.getShedule(
-            beginDate = beginDate,
-            endDate = endDate,
-            groupNumber = groupNumber,
-            teacherId = teacherId,
-            auditoryId = auditoryId,
-            isOnline = isOnline,
-            screenState = screenState,
-            object : GetSheduleCallback<List<SheduleDayDto>> {
-                override fun onSuccess(shedule: List<SheduleDayDto>) {
-                    _sheduleState.value = null
-                    _sheduleState.value = shedule
-                }
+        try {
+            val schedule = scheduleRepository.getSchedule(
+                beginDate = beginDate,
+                endDate = endDate,
+                groupNumber = groupNumber,
+                teacherId = teacherId,
+                auditoryId = auditoryId,
+                isOnline = isOnline,
+                screenState = screenState
+            )
+            _scheduleState.value = schedule
+        } catch (e: Exception) {
+            _scheduleState.value = null
+        }
 
-                override fun onError(error: String?) {
-                    Log.d("Error: ", error ?: "")
-                }
-
-            }
-        )
     }
 
-    fun getPreviousShedule(
+    fun getPreviousSchedule(
         beginDate: String?,
         endDate: String?,
         groupNumber: String?,
@@ -190,45 +180,40 @@ class MainViewModel @Inject constructor(
         auditoryId: String?,
         isOnline: Boolean?
     ) = viewModelScope.launch {
-        sheduleRepository.getShedule(
-            beginDate = beginDate,
-            endDate = endDate,
-            groupNumber = groupNumber,
-            teacherId = teacherId,
-            auditoryId = auditoryId,
-            isOnline = isOnline,
-            screenState = screenState,
-            object : GetSheduleCallback<List<SheduleDayDto>> {
-                override fun onSuccess(shedule: List<SheduleDayDto>) {
-                    _sheduleState.value = null
-                    _sheduleState.value = shedule
-                    _weekdaysList.value = listOf(
-                        Day(monday.value.minusDays(7), "Mon"),
-                        Day(tuesday.value.minusDays(7), "Tue"),
-                        Day(wednesday.value.minusDays(7), "Wed"),
-                        Day(thursday.value.minusDays(7), "Thu"),
-                        Day(friday.value.minusDays(7), "Fri"),
-                        Day(saturday.value.minusDays(7), "Sat"),
-                        Day(sunday.value.minusDays(7), "Sun")
-                    )
-                    monday.value = monday.value.minusDays(7)
-                    tuesday.value = tuesday.value.minusDays(7)
-                    wednesday.value = wednesday.value.minusDays(7)
-                    thursday.value = thursday.value.minusDays(7)
-                    friday.value = friday.value.minusDays(7)
-                    saturday.value = saturday.value.minusDays(7)
-                    sunday.value = sunday.value.minusDays(7)
-                }
+        try {
+            val schedule = scheduleRepository.getSchedule(
+                beginDate = beginDate,
+                endDate = endDate,
+                groupNumber = groupNumber,
+                teacherId = teacherId,
+                auditoryId = auditoryId,
+                isOnline = isOnline,
+                screenState = screenState
+            )
+            _scheduleState.value = schedule
 
-                override fun onError(error: String?) {
-                    Log.d("Error: ", error ?: "")
-                }
-
-            }
+        } catch (e: Exception) {
+            _scheduleState.value = null
+        }
+        _weekdaysList.value = listOf(
+            Day(monday.value.minusDays(7), "Mon"),
+            Day(tuesday.value.minusDays(7), "Tue"),
+            Day(wednesday.value.minusDays(7), "Wed"),
+            Day(thursday.value.minusDays(7), "Thu"),
+            Day(friday.value.minusDays(7), "Fri"),
+            Day(saturday.value.minusDays(7), "Sat"),
+            Day(sunday.value.minusDays(7), "Sun")
         )
+        monday.value = monday.value.minusDays(7)
+        tuesday.value = tuesday.value.minusDays(7)
+        wednesday.value = wednesday.value.minusDays(7)
+        thursday.value = thursday.value.minusDays(7)
+        friday.value = friday.value.minusDays(7)
+        saturday.value = saturday.value.minusDays(7)
+        sunday.value = sunday.value.minusDays(7)
     }
 
-    fun getNextShedule(
+    fun getNextSchedule(
         beginDate: String?,
         endDate: String?,
         groupNumber: String?,
@@ -236,130 +221,103 @@ class MainViewModel @Inject constructor(
         auditoryId: String?,
         isOnline: Boolean?
     ) = viewModelScope.launch {
-        sheduleRepository.getShedule(
-            beginDate = beginDate,
-            endDate = endDate,
-            groupNumber = groupNumber,
-            teacherId = teacherId,
-            auditoryId = auditoryId,
-            isOnline = isOnline,
-            screenState = screenState,
-            object : GetSheduleCallback<List<SheduleDayDto>> {
-                override fun onSuccess(shedule: List<SheduleDayDto>) {
-                    _sheduleState.value = null
-                    _sheduleState.value = shedule
-                    _weekdaysList.value = listOf(
-                        Day(monday.value.plusDays(7), "Mon"),
-                        Day(tuesday.value.plusDays(7), "Tue"),
-                        Day(wednesday.value.plusDays(7), "Wed"),
-                        Day(thursday.value.plusDays(7), "Thu"),
-                        Day(friday.value.plusDays(7), "Fri"),
-                        Day(saturday.value.plusDays(7), "Sat"),
-                        Day(sunday.value.plusDays(7), "Sun")
-                    )
-                    monday.value = monday.value.plusDays(7)
-                    tuesday.value = tuesday.value.plusDays(7)
-                    wednesday.value = wednesday.value.plusDays(7)
-                    thursday.value = thursday.value.plusDays(7)
-                    friday.value = friday.value.plusDays(7)
-                    saturday.value = saturday.value.plusDays(7)
-                    sunday.value = sunday.value.plusDays(7)
-                }
-
-                override fun onError(error: String?) {
-                    Log.d("Error: ", error ?: "")
-                }
-
-            }
+        try {
+            val schedule = scheduleRepository.getSchedule(
+                beginDate = beginDate,
+                endDate = endDate,
+                groupNumber = groupNumber,
+                teacherId = teacherId,
+                auditoryId = auditoryId,
+                isOnline = isOnline,
+                screenState = screenState
+            )
+            _scheduleState.value = schedule
+        } catch (e: Exception) {
+            _scheduleState.value = null
+        }
+        _weekdaysList.value = listOf(
+            Day(monday.value.plusDays(7), "Mon"),
+            Day(tuesday.value.plusDays(7), "Tue"),
+            Day(wednesday.value.plusDays(7), "Wed"),
+            Day(thursday.value.plusDays(7), "Thu"),
+            Day(friday.value.plusDays(7), "Fri"),
+            Day(saturday.value.plusDays(7), "Sat"),
+            Day(sunday.value.plusDays(7), "Sun")
         )
+        monday.value = monday.value.plusDays(7)
+        tuesday.value = tuesday.value.plusDays(7)
+        wednesday.value = wednesday.value.plusDays(7)
+        thursday.value = thursday.value.plusDays(7)
+        friday.value = friday.value.plusDays(7)
+        saturday.value = saturday.value.plusDays(7)
+        sunday.value = sunday.value.plusDays(7)
+
     }
 
     private fun getBuildings() = viewModelScope.launch {
         buildingScreenState.value = Event.loading()
-        buildingRepository.getBuildings(
-            object : GetBuildingsCallback<List<BuildingDto>> {
-                override fun onSuccess(buildings: List<BuildingDto>) {
-                    _buildingsState.clear()
-                    _buildingsState.addAll(buildings)
-                }
-
-                override fun onError(error: String?) {
-                    Log.d("Error: ", error ?: "")
-                }
-            }
-        )
-        buildingScreenState.value = Event.success(null)
+        try {
+            val buildings = buildingRepository.getBuildings()
+            _buildingsState.clear()
+            _buildingsState.addAll(buildings)
+            buildingScreenState.value = Event.success(buildings)
+        } catch (e: Exception) {
+            buildingScreenState.value = Event.success(null)
+        }
     }
 
 
     fun getAuditoriums(buildingId: String) = viewModelScope.launch {
         auditoriumScreenState.value = Event.loading()
-        auditoriumRepository.getAuditoriums(
-            buildingId = buildingId,
-            object : GetAuditoriumsCallback<List<AuditoriumDto>> {
-                override fun onSuccess(auditoriums: List<AuditoriumDto>) {
-                    _auditoriumsState.clear()
-                    _auditoriumsState.addAll(auditoriums)
-                }
+        try {
+            val auditoriums = auditoriumRepository.getAuditoriums(buildingId)
+            _auditoriumsState.clear()
+            _auditoriumsState.addAll(auditoriums)
 
-                override fun onError(error: String?) {
-                    Log.d("Error: ", error ?: "")
-                }
-            }
-        )
-        auditoriumScreenState.value = Event.success(null)
+            auditoriumScreenState.value = Event.success(auditoriums)
+        } catch (e: Exception) {
+            auditoriumScreenState.value = Event.success(null)
+        }
+
+
     }
 
     private fun getFaculties() = viewModelScope.launch {
         facultyScreenState.value = Event.loading()
-        facultyRepository.getFaculties(
-            object : GetFacultiesCallback<List<FacultyDto>> {
-                override fun onSuccess(faculties: List<FacultyDto>) {
-                    _facultiesState.clear()
-                    _facultiesState.addAll(faculties)
-                }
+        try {
+            val faculties = facultyRepository.getFaculties()
+            _facultiesState.clear()
+            _facultiesState.addAll(faculties)
 
-                override fun onError(error: String?) {
-                    Log.d("Error: ", error ?: "")
-                }
-            }
-        )
-        facultyScreenState.value = Event.success(null)
+            facultyScreenState.value = Event.success(faculties)
+        } catch (e: Exception) {
+            facultyScreenState.value = Event.success(null)
+        }
     }
 
     fun getGroups(facultyId: String) = viewModelScope.launch {
         groupScreenState.value = Event.loading()
-        groupRepository.getGroups(
-            facultyId = facultyId,
-            object : GetGroupsCallback<List<GroupDto>> {
-                override fun onSuccess(groups: List<GroupDto>) {
-                    _groupsState.clear()
-                    _groupsState.addAll(groups)
-                }
 
-                override fun onError(error: String?) {
-                    Log.d("Error: ", error ?: "")
-                }
-            }
-        )
-        groupScreenState.value = Event.success(null)
+        try {
+            val groups = groupRepository.getGroups(facultyId)
+            _groupsState.clear()
+            _groupsState.addAll(groups)
+
+            groupScreenState.value = Event.success(groups)
+        } catch (e: Exception) {
+            groupScreenState.value = Event.success(null)
+        }
     }
 
     private fun getTeachers() = viewModelScope.launch {
         teachersScreenState.value = Event.loading()
-        teacherRepository.getTeachers(
-            object : GetTeachersCallback<List<TeacherDto>> {
-                override fun onSuccess(teachers: List<TeacherDto>) {
-                    _teachersState.clear()
-                    _teachersState.addAll(teachers)
-                }
 
-                override fun onError(error: String?) {
-                    Log.d("Error: ", error ?: "")
-                }
+        try {
+            val teachers = teacherRepository.getTeachers()
+            teachersScreenState.value = Event.success(teachers)
+        } catch (e: Exception) {
+            teachersScreenState.value = Event.success(null)
+        }
 
-            }
-        )
-        teachersScreenState.value = Event.success(null)
     }
 }

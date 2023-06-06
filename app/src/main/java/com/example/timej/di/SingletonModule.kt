@@ -1,4 +1,4 @@
-package com.example.timej
+package com.example.timej.di
 
 import android.content.Context
 import androidx.datastore.core.DataStore

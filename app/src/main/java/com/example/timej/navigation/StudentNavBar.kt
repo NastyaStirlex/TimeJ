@@ -22,7 +22,6 @@ import com.example.timej.ui.theme.Shark
 import com.example.timej.ui.theme.White
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudentNavBar(
     navController: NavController,

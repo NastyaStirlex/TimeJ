@@ -10,6 +10,7 @@ import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.timej.R
@@ -42,8 +43,16 @@ fun GroupList(
                 .fillMaxSize()
                 .padding(top = 53.dp)
         ) {
-            Text(text = "We haven’t found anything", style = Choice, color = Shark)
-            Text(text = "But we can look for something else", style = SearchVariant, color = Shark)
+            Text(
+                text = stringResource(id = R.string.there_is_nothing),
+                style = Choice,
+                color = Shark
+            )
+            Text(
+                text = stringResource(id = R.string.we_can_look_something),
+                style = SearchVariant,
+                color = Shark
+            )
             Spacer(modifier = Modifier.height(12.dp))
             Image(
                 painter = painterResource(id = R.drawable.ic_not_found),
@@ -76,7 +85,7 @@ fun GroupList(
                 GroupItem(
                     group = filteredGroup,
                     onItemClick = { selectedGroup ->
-                        (mainViewModel::getShedule)(
+                        (mainViewModel::getSchedule)(
                             getCurrentWeekStart(mCalendar = calendar),
                             getCurrentWeekEnd(mCalendar = calendar),
                             groups.find { it.groupNumber.toString() == selectedGroup }?.id,
@@ -85,7 +94,7 @@ fun GroupList(
                             null
                         )
 
-                        navController.navigate("shedule?group=$selectedGroup")
+                        navController.navigate("schedule?group=$selectedGroup")
                     }
                 )
             }

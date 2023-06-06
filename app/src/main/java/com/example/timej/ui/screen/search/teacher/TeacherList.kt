@@ -54,7 +54,7 @@ fun TeacherList(
             TeacherItem(
                 teacher = filteredTeacher,
                 onItemClick = { selectedTeacher ->
-                    (mainViewModel::getShedule)(
+                    (mainViewModel::getSchedule)(
                         getCurrentWeekStart(mCalendar = calendar),
                         getCurrentWeekEnd(mCalendar = calendar),
                         null,
@@ -63,7 +63,7 @@ fun TeacherList(
                         null
                     )
 
-                    navController.navigate("shedule?teacher=$selectedTeacher")
+                    navController.navigate("schedule?teacher=$selectedTeacher")
                 }
             )
         }

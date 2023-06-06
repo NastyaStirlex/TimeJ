@@ -1,4 +1,4 @@
-package com.example.timej.view
+package com.example.timej.ui.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -78,7 +78,7 @@ fun CustomTextField(
             enabled = enabled,
             interactionSource = interactionSource,
             contentPadding = TextFieldDefaults.contentPaddingWithoutLabel(
-                start = 15.dp,
+                start = 15.dp, top = 0.dp, bottom = 0.dp
             ),
             placeholder = {
                 Text(

@@ -1,4 +1,4 @@
-package com.example.timej.ui.screen.shedule.view
+package com.example.timej.ui.screen.schedule.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*

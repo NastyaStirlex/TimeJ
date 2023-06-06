@@ -15,11 +15,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.timej.R
-import com.example.timej.data_classes.Status
+import com.example.timej.data.dto.AuditoriumDto
+import com.example.timej.data.net.Status
 import com.example.timej.ui.screen.MainViewModel
 import com.example.timej.ui.screen.search.view.SearchView
 import com.example.timej.ui.theme.*
-import com.example.timej.view.LoadingScreen
+import com.example.timej.ui.view.LoadingScreen
 
 @Composable
 fun AuditoriumSearch(
@@ -29,7 +30,18 @@ fun AuditoriumSearch(
     mainViewModel: MainViewModel
 ) {
     val auditorium = remember { mainViewModel.auditoriumSearchState }
-    val auditoriums = remember { mainViewModel.auditoriumsState }
+    //val auditoriums = remember { mainViewModel.auditoriumsState }
+    val auditoriums = listOf(
+        AuditoriumDto("", 123, "123", ""),
+        AuditoriumDto("", 234, "234", ""),
+        AuditoriumDto("", 45, "45", ""),
+        AuditoriumDto("", 3, "3", ""),
+        AuditoriumDto("", 47, "47", ""),
+        AuditoriumDto("", 100, "100", ""),
+        AuditoriumDto("", 223, "223", ""),
+        AuditoriumDto("", 310, "310", ""),
+
+    )
     val screenState = remember { mainViewModel.auditoriumScreenState }
 
     Column {
@@ -93,13 +105,24 @@ fun AuditoriumSearch(
         if (screenState.value.status == Status.LOADING) {
             LoadingScreen()
         } else if (screenState.value.status == Status.SUCCESS) {
-            AuditoriumList(
-                navController = navController,
-                mainViewModel = mainViewModel,
-                state = auditorium,
-                building = building,
-                auditoriums = auditoriums
-            )
+            val data = screenState.value.data
+            if (data == null) {
+                AuditoriumList(
+                    navController = navController,
+                    mainViewModel = mainViewModel,
+                    state = auditorium,
+                    building = building,
+                    auditoriums = auditoriums
+                )
+            } else {
+                AuditoriumList(
+                    navController = navController,
+                    mainViewModel = mainViewModel,
+                    state = auditorium,
+                    building = building,
+                    auditoriums = data
+                )
+            }
         }
 
     }

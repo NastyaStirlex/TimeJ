@@ -15,11 +15,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.timej.R
-import com.example.timej.data_classes.Status
+import com.example.timej.data.dto.GroupDto
+import com.example.timej.data.net.Status
 import com.example.timej.ui.screen.MainViewModel
 import com.example.timej.ui.screen.search.view.SearchView
 import com.example.timej.ui.theme.*
-import com.example.timej.view.LoadingScreen
+import com.example.timej.ui.view.LoadingScreen
 
 @Composable
 fun GroupSearch(
@@ -29,7 +30,18 @@ fun GroupSearch(
     mainViewModel: MainViewModel
 ) {
     val group = remember { mainViewModel.groupSearchState }
-    val groups = remember { mainViewModel.groupsState }
+    // val groups = remember { mainViewModel.groupsState }
+    val groups = listOf(
+        GroupDto("", 972101),
+        GroupDto("", 212103),
+        GroupDto("", 132001),
+        GroupDto("", 971901),
+        GroupDto("", 971802),
+        GroupDto("", 222104),
+        GroupDto("", 312105),
+        GroupDto("", 452103),
+
+        )
     val groupScreenState = remember { mainViewModel.groupScreenState }
 
     Column {

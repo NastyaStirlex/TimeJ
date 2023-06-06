@@ -6,26 +6,24 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.timej.R
-import com.example.timej.data_classes.Status
+import com.example.timej.data.dto.FacultyDto
+import com.example.timej.data.net.Status
 import com.example.timej.ui.screen.MainViewModel
 import com.example.timej.ui.screen.search.view.SearchView
 import com.example.timej.ui.theme.HawkesBlue
 import com.example.timej.ui.theme.Raven
 import com.example.timej.ui.theme.SearchTitle
 import com.example.timej.ui.theme.Shark
-import com.example.timej.view.LoadingScreen
+import com.example.timej.ui.view.LoadingScreen
 
 @Composable
 fun FacultySearch(
@@ -34,7 +32,17 @@ fun FacultySearch(
     mainViewModel: MainViewModel
 ) {
     val faculty = remember { mainViewModel.facultySearchState }
-    val faculties = remember { mainViewModel.facultiesState }
+    // val faculties = remember { mainViewModel.facultiesState }
+    val faculties = listOf(
+        FacultyDto("", "Faculty 1"),
+        FacultyDto("", "Faculty 2"),
+        FacultyDto("", "Faculty 3"),
+        FacultyDto("", "Faculty 4"),
+        FacultyDto("", "Faculty 5"),
+        FacultyDto("", "Faculty 6"),
+        FacultyDto("", "Faculty 7"),
+        FacultyDto("", "Faculty 8")
+        )
     val screenState = remember { mainViewModel.facultyScreenState }
 
     Column {

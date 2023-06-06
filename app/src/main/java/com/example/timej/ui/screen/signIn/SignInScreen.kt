@@ -29,9 +29,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.timej.R
 import com.example.timej.data.repository.JwtRepository
-import com.example.timej.data_classes.Status
+import com.example.timej.data.net.Status
 import com.example.timej.ui.theme.*
-import com.example.timej.view.CustomTextField
+import com.example.timej.ui.view.CustomTextField
 import kotlinx.coroutines.delay
 
 @Composable
@@ -41,8 +41,7 @@ fun SignInScreen(
     onNoAccountClick: () -> Unit,
     signInViewModel: SignInViewModel,
     context: Context,
-    jwtRepository: JwtRepository,
-
+    jwtRepository: JwtRepository
     ) {
 
     val signInScreenState by remember { signInViewModel.signInScreenState }
@@ -197,7 +196,8 @@ fun SignInScreen(
                 }
 
                 Button(
-                    onClick = signInViewModel::onClickLogin,
+                    //onClick = onSuccessSignIn,
+                     onClick = signInViewModel::onClickLogin,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
@@ -224,9 +224,9 @@ fun SignInScreen(
         if (signInScreenState.status == Status.SUCCESS) {
             signInScreenState.data?.let { jwtRepository.saveAccessToken(context, it.accessToken) }
             signInScreenState.data?.let { jwtRepository.saveRefreshToken(context, it.refreshToken) }
-            delay(1700)
+            //delay(1700)
             navController.navigate("launch")
-            //onSuccessSignIn.invoke()
+            onSuccessSignIn.invoke()
         }
     }
 }

@@ -27,6 +27,17 @@
     <string name="today">Today</string>
     <string name="week">Week</string>
 
+    <string name="there_is_nothing">We haven’t found anything</string>
+    <string name="we_can_look_something">But we can look for something else</string>
+
+    <string name="break_time">15 minutes</string>
+    <string name="lunch">lunch</string>
+    <string name="lunch_time">2:00 – 2:45</string>
+    <string name="lesson_time">%1$s · %2$d lesson</string>
+    <string name="group_pattern">Group %1$s</string>
+    <string name="date_pattern">%1$s · 7 week</string>
+
+
     <string name="login_failed">Неверный логин или пароль</string>
     <string name="unknown_error">Произошла неизвестная ошибка</string>
     <string name="http_error">Произошла ошибка при обращении к серверу</string>

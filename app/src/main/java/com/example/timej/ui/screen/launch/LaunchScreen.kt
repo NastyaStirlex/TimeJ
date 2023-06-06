@@ -7,10 +7,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
-import com.example.timej.view.LoadingScreen
+import com.example.timej.ui.view.LoadingScreen
 import kotlinx.coroutines.delay
-
-//  с этого экрана в зависимости от роли показать соответствующее расписание
 
 @Composable
 fun LaunchScreen(
@@ -33,7 +31,7 @@ fun LaunchScreen(
         )
 
         delay(1700)
-        if (isStudent) {
+        if (true) {
             navController.navigate("student_schedule/${launchViewModel.groupNumber}")
         } else if (isTeacher) {
             navController.navigate("teacher_schedule/${launchViewModel.teacherName}")

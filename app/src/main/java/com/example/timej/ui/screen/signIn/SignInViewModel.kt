@@ -1,28 +1,27 @@
 package com.example.timej.ui.screen.signIn
 
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.timej.data.callbacks.GetUserDetailsCallback
-import com.example.timej.data.dto.LoginBodyDto
-import com.example.timej.data.repository.UserAuthRepository
-import com.example.timej.data_classes.Event
 import com.example.timej.data.dto.TokenDto
 import com.example.timej.data.dto.UserDto
+import com.example.timej.data.repository.DataStoreRepository
+import com.example.timej.data.repository.UserAuthRepository
+import com.example.timej.data.net.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
 class SignInViewModel @Inject constructor(
-    private val userAuthRepository: UserAuthRepository
+    private val userAuthRepository: UserAuthRepository,
+    private val dataStoreRepository: DataStoreRepository
 ) : ViewModel() {
 
     val role = userAuthRepository.role
-
 
     var groupId = userAuthRepository.groupId
     var groupNumber = userAuthRepository.groupNumber
@@ -33,18 +32,11 @@ class SignInViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             if (userAuthRepository.isAuthenticated() && userAuthRepository.role != null) {
-                Log.d("is auth and role not null", "")
-                Log.d("role:", role ?: "null")
                 if (userAuthRepository.isStudent()) {
-                    Log.d("is student", "")
                     groupId = userAuthRepository.groupId
                     groupNumber = userAuthRepository.groupNumber
 
-                } else if (userAuthRepository.isTeacher()) {
-                    Log.d("is teacher", "")
-                }
-            } else {
-                Log.d("is not auth", "")
+                } else if (userAuthRepository.isTeacher()) {}
             }
         }
     }
@@ -53,7 +45,7 @@ class SignInViewModel @Inject constructor(
 
     val signInScreenState = mutableStateOf<Event<TokenDto>>(Event.default())
 
-    private val _emailState = mutableStateOf("")
+    private val _emailState = mutableStateOf<String>("")
     val emailState: State<String>
         get() = _emailState
 
@@ -89,28 +81,37 @@ class SignInViewModel @Inject constructor(
     }
 
     fun onClickLogin() = viewModelScope.launch {
-        userAuthRepository.login(
-            loginBody = LoginBodyDto(
-                email = _emailState.value,
-                password = _passwordState.value
-            ),
-            signInScreenState = signInScreenState
-        )
-
-        signInScreenState.value.data?.let {
-            userAuthRepository.getUserDetails(accessToken = it.accessToken, callback = object :
-                GetUserDetailsCallback<UserDto> {
-                override fun onSuccess(userDetails: UserDto) {
-                    _userDetails.value = userDetails
-                }
-
-                override fun onError(error: String?) {
-                    Log.d("Error: ", error ?: "")
-                }
-            })
+        if (_rememberMeState.value) {
+            dataStoreRepository.saveEmail(_emailState.value)
         }
+
+        signInScreenState.value = Event.success(null)
+
+//        userAuthRepository.login(
+//            loginBody = LoginBodyDto(
+//                email = _emailState.value,
+//                password = _passwordState.value
+//            ),
+//            signInScreenState = signInScreenState
+//        )
+//
+//        signInScreenState.value.data?.let {
+//            userAuthRepository.getUserDetails(accessToken = it.accessToken)
+//        }
         //delay(1500)
-
-
     }
+
+    val emailFlow = viewModelScope.launch {
+        dataStoreRepository.getEmail()
+            .catch {
+                if (it is IOException) {
+                    it.printStackTrace()
+                    emit("")
+                } else {
+                    throw it
+                }
+            }
+            .collect { _emailState.value = it }
+    }
+
 }

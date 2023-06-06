@@ -17,7 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.timej.R
 import com.example.timej.ui.theme.Raven
-import com.example.timej.view.CustomTextField
+import com.example.timej.ui.view.CustomTextField
 
 @Composable
 fun SearchView(state: State<String>, onValueChange: (String) -> Unit, placeholderText: Int) {

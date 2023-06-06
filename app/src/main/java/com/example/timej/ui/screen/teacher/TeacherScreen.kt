@@ -20,24 +20,89 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.timej.R
-import com.example.timej.data_classes.Status
+import com.example.timej.data.dto.Auditory
+import com.example.timej.data.dto.Group
+import com.example.timej.data.dto.Lesson
+import com.example.timej.data.dto.LessonType
+import com.example.timej.data.dto.ScheduleDayDto
+import com.example.timej.data.dto.Subject
+import com.example.timej.data.dto.Teacher
+import com.example.timej.data.net.Status
 import com.example.timej.ui.screen.MainViewModel
-import com.example.timej.ui.screen.shedule.DayLessons
-import com.example.timej.ui.screen.shedule.view.NoLessons
-import com.example.timej.ui.screen.shedule.view.NoLessonsOnWeek
-import com.example.timej.view.LoadingScreen
+import com.example.timej.ui.screen.schedule.view.LessonsDay
+import com.example.timej.ui.screen.schedule.view.NoLessons
+import com.example.timej.ui.screen.schedule.view.NoLessonsOnWeek
+import com.example.timej.ui.view.LoadingScreen
 import com.example.timej.ui.theme.*
+import org.joda.time.LocalDate
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TeacherScreen(
     mainViewModel: MainViewModel,
     teacherViewModel: TeacherViewModel,
     name: String
 ) {
-    val schedule by teacherViewModel.teacherScheduleState.observeAsState()
+    // val schedule by teacherViewModel.teacherScheduleState.observeAsState()
+    val sdf = LocalDate.now()
+    val mondayTest = sdf.withDayOfWeek(1)
+    val schedule = listOf(
+        ScheduleDayDto(
+            mondayTest.toString("yyyy-MM-dd"), listOf(
+                Lesson(
+                    Auditory(123, "", "", "", ""),
+                    "",
+                    listOf(Group(972101, "", 1)),
+                    id = "",
+                    lessonNumber = 0,
+                    lessonType = LessonType("", "Лекция"),
+                    replicaId = "",
+                    subject = Subject("", "Maths"),
+                    teacher = Teacher("Ivan Ivanov Ivanovich", "")
+                ),
+                Lesson(
+                    Auditory(123, "", "", "", ""),
+                    "",
+                    listOf(Group(972101, "", 1), Group(972102, "", 1), Group(972103, "", 1)),
+                    id = "",
+                    lessonNumber = 1,
+                    lessonType = LessonType("", "Практическое занятие"),
+                    replicaId = "",
+                    subject = Subject("", "Physics"),
+                    teacher = Teacher("Ivan Ivanov Ivanovich", "")
+                ),
+                Lesson(
+                    Auditory(123, "", "", "", ""),
+                    "",
+                    listOf(Group(972101, "", 1)),
+                    id = "",
+                    lessonNumber = 2,
+                    lessonType = LessonType("", "Лабораторная"),
+                    replicaId = "",
+                    subject = Subject("", "History"),
+                    teacher = Teacher("Ivan Ivanov Ivanovich", "")
+                ),
+                null,
+                null,
+                Lesson(
+                    Auditory(123, "", "", "", ""),
+                    "",
+                    listOf(Group(972101, "", 1)),
+                    id = "",
+                    lessonNumber = 5,
+                    lessonType = LessonType("", "Экзамен"),
+                    replicaId = "",
+                    subject = Subject("", "Physical exercises"),
+                    teacher = Teacher("Ivan Ivanov Ivanovich", "")
+                ),
+                null
+            )
+        )
+    )
+
     val weekdays by teacherViewModel._weekdaysList.observeAsState()
     val monday by remember { teacherViewModel.monday }
     val saturday by remember { teacherViewModel.saturday }
@@ -47,13 +112,11 @@ fun TeacherScreen(
         initialPage = 0,
         initialPageOffsetFraction = 0f
     ) {
-        7
+        6
     }
-    val pageCount = 7
+    val pageCount = 6
 
-    val sdf = org.joda.time.LocalDate.now()
     val currentDateAndTime = sdf.toString("dd MMMM yyyy")
-
 
     Column {
         Box(
@@ -71,7 +134,7 @@ fun TeacherScreen(
                 )
 
                 Text(
-                    text = "$currentDateAndTime · 7 week",
+                    text = stringResource(id = R.string.date_pattern, currentDateAndTime),
                     style = SheduleDate,
                     color = Raven
                 )
@@ -113,7 +176,7 @@ fun TeacherScreen(
                     repeat(pageCount) { iteration ->
                         val typeWeekdays =
                             if (pagerState.currentPage == iteration) WeekdaysEnlarged else Weekdays
-                        val typeShedule =
+                        val typeSchedule =
                             if (pagerState.currentPage == iteration) SheduleEnlarged else Shedule
 
                         val width by animateDpAsState(targetValue = if (pagerState.currentPage == iteration) 50.dp else 38.89.dp)
@@ -146,7 +209,7 @@ fun TeacherScreen(
                                 weekdays?.get(iteration)?.let {
                                     Text(
                                         text = it.number.toString("dd"),
-                                        style = typeShedule,
+                                        style = typeSchedule,
                                         color = Shark
                                     )
                                 }
@@ -180,7 +243,6 @@ fun TeacherScreen(
                 }
             }
         }
-        //end header's
 
         if (teacherScreenState.status == Status.LOADING) {
             LoadingScreen()
@@ -206,7 +268,7 @@ fun TeacherScreen(
                             schedule!!.find { it.date == weekdays?.get(page)?.number?.toString("yyyy-MM-dd") }
                         if (day != null) {
                             schedule!!.find { it.date == day.date }
-                                ?.let { DayLessons(lessons = it.lessons) }
+                                ?.let { LessonsDay(lessons = it.lessons) }
                         } else {
                             NoLessons()
                         }
@@ -214,6 +276,5 @@ fun TeacherScreen(
                 }
             )
         }
-
     }
 }
